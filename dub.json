@@ -1,0 +1,28 @@
+{
+	"name": "msmp-d",
+	"authors": [
+		"stadnik"
+	],
+	"description": "Client for simple messaging protocol MSMP",
+	"copyright": "Copyright @ 2019, Mateusz Stadnik",
+	"license": "GPLv3",
+	"configurations": [
+		{
+			"name": "executable",
+			"targetType": "executable"
+
+		},
+		{
+			"name": "unittest",
+			"targetType": "executable",
+			"dependencies": {
+				"d-unit": "~>0.9.0"
+			},
+			"excludedSourceFiles": [
+				"source/app.d"
+			],
+			"mainSourceFile": "test/main.d",
+			"sourcePaths": ["source", "test"]
+		}
+	]
+}
