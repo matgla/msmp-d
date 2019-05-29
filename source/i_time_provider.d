@@ -1,6 +1,8 @@
 module source.i_time_provider;
 
+import core.time : Duration;
+
 interface ITimeProvider
 {
-    long milliseconds();
+    Duration milliseconds();
 }

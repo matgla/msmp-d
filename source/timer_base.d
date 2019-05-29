@@ -1,5 +1,7 @@
 module source.timer_base;
 
+import core.time : Duration, dur;
+
 import source.i_timer;
 import source.i_time_provider;
 
@@ -19,12 +21,12 @@ public:
     this(ITimeProvider time_provider)
     {
         time_provider_ = time_provider;
-        start_time_ = 0;
-        end_time_ = 0;
+        start_time_ = dur!"msecs"(0);
+        end_time_ = dur!"msecs"(0);
         state_ = State.Idle;
     }
 
-    bool start(CallbackType callback, long time)
+    bool start(CallbackType callback, Duration time)
     {
         if (start(time))
         {
@@ -34,7 +36,7 @@ public:
         return false;
     }
 
-    bool start(long time)
+    bool start(Duration time)
     {
         if (state_ == State.Running)
         {
@@ -74,8 +76,8 @@ protected:
 
     ITimeProvider time_provider_;
 
-    long start_time_;
-    long end_time_;
+    Duration start_time_;
+    Duration end_time_;
     CallbackType callback_;
 
     State state_;

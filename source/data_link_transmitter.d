@@ -1,5 +1,7 @@
 module source.data_link_transmitter;
 
+import core.time : dur;
+
 import std.container : DList;
 import std.digest.digest;
 import std.experimental.logger;
@@ -205,7 +207,7 @@ private:
             }
             --retries_counter_;
             send_byte_async(current_byte_);
-        }, 500);
+        }, dur!"msecs"(500));
         context_.timer_manager().register_timer(timer_);
     }
 

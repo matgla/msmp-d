@@ -2,7 +2,7 @@ module test.data_link_transmitter_tests;
 
 import dunit;
 
-import std.stdio;
+import core.time : dur;
 
 import source.context;
 import source.data_link_transmitter;
@@ -156,23 +156,23 @@ class DataLinkTransmitterTests
         context_.execution_queue().run();
 
         assertEquals([cast(ubyte)ControlByte.StartFrame], writer_.get_buffer());
-        time_provider_.increment(501);
+        time_provider_.increment(dur!"msecs"(501));
         context_.timer_manager().run();
         context_.execution_queue().run();
         assertEquals([cast(ubyte)ControlByte.StartFrame, cast(ubyte)ControlByte.StartFrame], writer_.get_buffer());
-        time_provider_.increment(501);
+        time_provider_.increment(dur!"msecs"(501));
         context_.timer_manager().run();
         context_.execution_queue().run();
         assertEquals([cast(ubyte)ControlByte.StartFrame, cast(ubyte)ControlByte.StartFrame, cast(ubyte)ControlByte.StartFrame],
             writer_.get_buffer());
-        time_provider_.increment(501);
+        time_provider_.increment(dur!"msecs"(501));
         context_.timer_manager().run();
         context_.execution_queue().run();
         assertEquals([cast(ubyte)ControlByte.StartFrame, cast(ubyte)ControlByte.StartFrame,
             cast(ubyte)ControlByte.StartFrame, cast(ubyte)ControlByte.StartFrame],
             writer_.get_buffer());
         assertFalse(failed_);
-        time_provider_.increment(501);
+        time_provider_.increment(dur!"msecs"(501));
         context_.timer_manager().run();
         context_.execution_queue().run();
         assertEquals([cast(ubyte)ControlByte.StartFrame, cast(ubyte)ControlByte.StartFrame,

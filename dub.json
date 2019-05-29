@@ -9,8 +9,8 @@
 	"configurations": [
 		{
 			"name": "executable",
-			"targetType": "executable"
-
+			"targetType": "executable",
+			"targetPath": "bin"
 		},
 		{
 			"name": "unittest",
@@ -22,7 +22,8 @@
 				"source/app.d"
 			],
 			"mainSourceFile": "test/main.d",
-			"sourcePaths": ["source", "test"]
+			"sourcePaths": ["source", "test"],
+			"targetPath": "bin_test"
 		}
 	]
 }
