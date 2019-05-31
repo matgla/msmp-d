@@ -1,17 +1,19 @@
 module source.transport_transmitter;
 
+import std.container: DList;
 import std.digest.crc;
 import std.functional: toDelegate;
 import std.experimental.logger;
 
-import queue;
 
 import source.i_time_provider;
-import source.data_link_transmitter: TransmissionStatus, DataLinkTransmitter;
+import source.data_link_transmitter: DataLinkTransmitter;
 import source.timeout_timer;
 import source.context;
 import source.message_type;
 import source.logger_factory;
+import source.transmission_status;
+
 
 void dummy()
 {}
@@ -25,49 +27,51 @@ public:
     {
         context_ = context;
         logger_ = LoggerFactory.createLogger("TransportTransmitter");
-        frames_ = new Queue!Frame;
-        control_frames_ = new Queue!Frame;
-        logger_.trace("Created");
+        data_link_transmitter_ = data_link_transmitter;
 
-        data_link_transmitter_.on_success(delegate()
+        data_link_transmitter_.on_success(&TransportTransmitter.on_transmission_success);
+        data_link_transmitter_.on_failure(&TransportTransmitter.on_transmission_failure);
+        timer_ = new TimeoutTimer(context_.time_provider());
+    }
+
+    void on_transmission_success()
+    {
+        logger_.trace("Transmission done, starting timer for acknowledge");
+        timer_.start(delegate()
         {
-            logger_.trace("Transmission done, starting timer for acknowledge");
-            timer_.start(delegate()
-                {
-                    logger_.tracef("Timer fired: %d", retransmission_counter_);
+            logger_.tracef("Timer fired: %d", retransmission_counter_);
 
-                    if (retransmission_counter_ >= context_.configuration().max_retransmission_tries)
-                    {
-                        frames_.front().on_failure();
-                        frames_.popFront();
-                        return;
-                    }
-                    ++retransmission_counter_;
-                    send_next_frame();
-                }, context_.configuration().timeout_for_transmission);
-        });
-
-        data_link_transmitter_.on_failure(delegate(TransmissionStatus status){
-            logger_.trace("Received failure: ", status);
-            auto callback = frames_.front().on_failure;
-            if (!frames_.empty())
-            {
-                send_next_frame();
-                ++retransmission_counter_;
-            }
             if (retransmission_counter_ >= context_.configuration().max_retransmission_tries)
             {
-                callback();
+                frames_.front().on_failure();
+                frames_.removeFront();
+                return;
             }
-        });
+            ++retransmission_counter_;
+            send_next_frame();
+        }, context_.configuration().timeout_for_transmission);
         context_.timer_manager().register_timer(timer_);
+    }
 
+    void on_transmission_failure(TransmissionStatus status)
+    {
+        logger_.trace("Received failure: ", status);
+        auto callback = frames_.front().on_failure;
+        if (!frames_.empty())
+        {
+            send_next_frame();
+            ++retransmission_counter_;
+        }
+        if (retransmission_counter_ >= context_.configuration().max_retransmission_tries)
+        {
+            callback();
+        }
     }
 
     TransmissionStatus send_control(const StreamType payload, const CallbackType on_success = toDelegate(&dummy),
         const CallbackType on_failure = toDelegate(&dummy))
     {
-        logger_.tracef("Sending control message: [%(%#x, %).]", payload);
+        logger_.tracef("Sending control message: [%(%#x, %)]", payload);
 
         if (context_.configuration().max_payload_size < payload.length + 2 + 4)
         {
@@ -93,27 +97,29 @@ public:
         frame.on_failure = on_failure;
         frame.type = MessageType.Control;
 
-        control_frames_.put(frame);
+        control_frames_.insertBack(frame);
 
 
-        context_.execution_queue().push_front(delegate()
-        {
-            logger_.trace("Sending next control frame. Still exists in buffer: ");
-            foreach (frame; control_frames_)
-            {
-                logger_.tracef("id: %d -> [%(%#x, %).]", frame.transaction_id, frame.buffer);
-            }
-            data_link_transmitter_.send(frames_.front().buffer);
-            control_frames_.popFront();
-        });
+        context_.execution_queue().push_front(&TransportTransmitter.send_control_frame);
 
         return TransmissionStatus.Ok;
+    }
+
+    void send_control_frame()
+    {
+        logger_.trace("Sending next control frame. Still exists in buffer: ");
+        foreach (frame; control_frames_)
+        {
+            logger_.tracef("id: %d -> [%(%#x, %)]", frame.transaction_id, frame.buffer);
+        }
+        data_link_transmitter_.send(control_frames_.front().buffer);
+        control_frames_.removeFront();
     }
 
     TransmissionStatus send(const StreamType payload, const CallbackType on_success = toDelegate(&dummy),
         const CallbackType on_failure = toDelegate(&dummy))
     {
-        logger_.tracef("Sending message: [%(%#x, %).]", payload);
+        logger_.tracef("Sending message: [%(%#x, %)]", payload);
 
         return send(MessageType.Data, payload, on_success, on_failure);
     }
@@ -129,7 +135,7 @@ public:
             retransmission_counter_ = 0;
             callback();
 
-            frames_.popFront();
+            frames_.removeFront();
             if (!frames_.empty())
             {
                 send_next_frame();
@@ -189,7 +195,7 @@ private:
         frame.type = type;
 
         bool is_first_frame = frames_.empty();
-        frames_.put(frame);
+        frames_.insertBack(frame);
 
         if (is_first_frame)
         {
@@ -205,7 +211,7 @@ private:
             logger_.trace("Sending next frame. Still exists in buffer: ");
             foreach (frame; frames_)
             {
-                logger_.tracef("id: %d -> [%(%#x, %).]", frame.transaction_id, frame.buffer);
+                logger_.tracef("id: %d -> [%(%#x, %)]", frame.transaction_id, frame.buffer);
             }
 
             data_link_transmitter_.send(frames_.front().buffer);
@@ -228,8 +234,8 @@ private:
             MessageType type;
     }
 
-    Queue!Frame frames_;
-    Queue!Frame control_frames_;
+    DList!Frame frames_;
+    DList!Frame control_frames_;
     ubyte retransmission_counter_;
     TimeoutTimer timer_;
     Context context_;

@@ -1,6 +1,9 @@
 module test.stubs.data_link_transmitter_stub;
 
-import source.data_link_transmitter: TransmissionStatus, DataLinkTransmitter;
+import std.signals;
+
+import source.data_link_transmitter;
+import source.transmission_status;
 import source.context;
 
 import test.stubs.writer_stub;
@@ -27,23 +30,17 @@ public:
 
     void emit_success()
     {
-        if (on_success_)
-        {
-            on_success_();
-        }
+        on_success_.emit();
     }
 
     void emit_failure(TransmissionStatus status)
     {
-        if (on_failure_)
-        {
-            on_failure_(status);
-        }
+        on_failure_.emit(status);
     }
 
     override TransmissionStatus send(StreamType payload)
     {
-        buffer_ = payload;
+        buffer_ ~= payload[];
         if (auto_emit_)
         {
             emit_success();

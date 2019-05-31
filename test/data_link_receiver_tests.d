@@ -16,26 +16,11 @@ class DataLinkReceiverTests
         time_provider_ = new TimeProviderStub;
     }
 
-    @BeforeAll
-    public static void setUpAll()
-    {
-    }
-
-    @AfterAll
-    public static void tearDownAll()
-    {
-    }
-
     @BeforeEach
     public void setUp()
     {
         data_buffer_ = [];
         failure_buffer_ = [];
-    }
-
-    @AfterEach
-    public void tearDown()
-    {
     }
 
     @Test

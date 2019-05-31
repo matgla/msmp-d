@@ -10,6 +10,9 @@ class DataLinkReceiver
 {
 public:
     alias StreamType = ubyte[];
+
+    mixin Signal!(StreamType) on_data_;
+    mixin Signal!(StreamType) on_failure_;
     alias OnDataReceivedSlot = on_data_.slot_t;
     alias OnFailureSlot = on_failure_.slot_t;
 
@@ -19,7 +22,7 @@ public:
         logger_ = LoggerFactory.createLogger("DataLinkReceiver");
     }
 
-    void receive(ubyte[] payload)
+    void receive(StreamType payload)
     {
         foreach (ubyte data; payload)
         {
@@ -97,8 +100,6 @@ private:
         }
     }
 
-    mixin Signal!(StreamType) on_data_;
-    mixin Signal!(StreamType) on_failure_;
 
     Logger logger_;
     StreamType buffer_;
