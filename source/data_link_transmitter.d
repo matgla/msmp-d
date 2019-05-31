@@ -20,6 +20,8 @@ class DataLinkTransmitter
 {
 public:
     alias StreamType = ubyte[];
+    mixin Signal!() on_success_;
+    mixin Signal!(TransmissionStatus) on_failure_;
     alias OnSuccessSlot = on_success_.slot_t;
     alias OnFailureSlot = on_failure_.slot_t;
 
@@ -230,8 +232,7 @@ private:
     }
 
     Logger logger_;
-    mixin Signal!() on_success_;
-    mixin Signal!(TransmissionStatus) on_failure_;
+
     IDataWriter writer_;
     Context context_;
     uint retries_counter_;

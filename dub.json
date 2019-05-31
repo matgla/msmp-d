@@ -16,7 +16,8 @@
 			"name": "unittest",
 			"targetType": "executable",
 			"dependencies": {
-				"d-unit": "~>0.9.0"
+				"d-unit": "~>0.9.0",
+				"queue": "~>1.0.0"
 			},
 			"excludedSourceFiles": [
 				"source/app.d"
