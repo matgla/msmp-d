@@ -74,8 +74,6 @@ private:
         frame.buffer = payload[2..$-4];
 
         CRC32 crc_calculator;
-        logger_.tracef("Received frame: [%(%#x, %)]", payload[0..$-4]);
-
         crc_calculator.put(payload[0..$-4]);
         ubyte[4] crc = crc_calculator.finish();
         ubyte[] received_crc = payload[$-4..$];
