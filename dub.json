@@ -10,7 +10,7 @@
 	"configurations": [
 		{
 			"name": "executable",
-			"targetType": "executable",
+			"targetType": "staticLibrary",
 			"targetPath": "bin",
 			"versions": ["StdLoggerDisableTrace"],
 			"dependencies": {
