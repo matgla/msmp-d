@@ -4,8 +4,12 @@ import std.container: DList;
 import std.experimental.logger;
 import std.signals;
 
+import eul.logger.logger_factory;
+import eul.timer.interval_timer;
+
+import source.connection_messages.handshake;
+import source.context;
 import source.transport_transceiver;
-import source.logger_factory;
 import source.message_handler;
 
 class Connection
@@ -17,11 +21,16 @@ public:
     mixin Signal!(StreamType) on_data_;
     alias OnDataSlot = on_data_.slot_t;
 
-    this(TransportTransceiver transceiver)
+    this(TransportTransceiver transceiver, Context context)
     {
         transceiver_ = transceiver;
         transceiver_.on_data(&Connection.handle);
         logger_ = LoggerFactory.createLogger("Connection");
+        context_ = context;
+
+        logger_.info("Sending handshake to peer");
+        auto msg = new Handshake(1, 0, 255, "SomeClient\0").serialize();
+        transceiver_.send(msg);
     }
 
     void on_connected(OnConnectedSlot slot)
@@ -69,7 +78,9 @@ private:
         }
     }
 
+    Context context_;
     DList!MessageHandler handlers_;
     TransportTransceiver transceiver_;
     Logger logger_;
+    IntervalTimer timer_;
 }

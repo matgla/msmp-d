@@ -3,23 +3,27 @@ module source.message_broker;
 import std.experimental.logger;
 import std.container: DList;
 
-import source.logger_factory;
+import eul.logger.logger_factory;
+
+import source.context;
 import source.transport_transceiver;
 import source.message_handler;
+import source.connection;
 
 class MessageBroker
 {
 public:
     alias CallbackType = void delegate();
-    this()
+    this(Context context)
     {
+        context_ = context;
         logger_ = LoggerFactory.createLogger("MessageBroker");
     }
 
     void add_transceiver(TransportTransceiver transceiver)
     {
-        transceivers_.insertBack(transceiver);
-        transceivers_.back().on_data(&MessageBroker.handle_message);
+        connections_.insertBack(new Connection(transceiver, context_));
+        connections_.back().on_data(&MessageBroker.handle_message);
     }
 
     void publish(Message)(Message message, CallbackType on_success, CallbackType on_failure)
@@ -46,7 +50,8 @@ private:
         }
     }
 
+    Context context_;
     Logger logger_;
-    DList!TransportTransceiver transceivers_;
+    DList!Connection connections_;
     DList!MessageHandler handlers_;
 }

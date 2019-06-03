@@ -6,7 +6,8 @@ import std.experimental.logger;
 import std.signals;
 import std.digest.crc;
 
-import source.logger_factory;
+import eul.logger.logger_factory;
+
 import source.transport_frame;
 import source.data_link_receiver;
 import source.message_type;

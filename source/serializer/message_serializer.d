@@ -26,9 +26,17 @@ public:
         return compose_impl!uint(d);
     }
 
-    auto compose_string(string str)
+    auto compose_string(char[] str)
     {
-        SerializedMessage msg = new SerializedMessage(buffer_, str);
+        size_t str_length = 0;
+        for (str_length = 0; str_length < str.length; ++str_length)
+        {
+            if (str[str_length] == '\0')
+            {
+                break;
+            }
+        }
+        SerializedMessage msg = new SerializedMessage(buffer_, str[0..str_length+1]);
         return msg;
     }
 

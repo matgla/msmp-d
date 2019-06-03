@@ -3,8 +3,9 @@ module source.data_link_receiver;
 import std.experimental.logger;
 import std.signals;
 
+import eul.logger.logger_factory;
+
 import source.control_byte;
-import source.logger_factory;
 
 class DataLinkReceiver
 {

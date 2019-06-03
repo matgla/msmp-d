@@ -1,9 +1,10 @@
 module source.context;
 
+import eul.execution.execution_queue;
+import eul.timer.timer_manager;
+import eul.time.i_time_provider;
+
 import source.configuration;
-import source.execution_queue;
-import source.i_time_provider;
-import source.timer_manager;
 
 class Context
 {

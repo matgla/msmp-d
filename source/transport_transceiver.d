@@ -3,9 +3,10 @@ module source.transport_transceiver;
 import std.signals;
 import std.experimental.logger;
 
+import eul.logger.logger_factory;
+
 import source.transport_receiver;
 import source.transport_transmitter;
-import source.logger_factory;
 import source.transport_frame;
 import source.control_messages.messages_ids;
 import source.control_messages.nack;

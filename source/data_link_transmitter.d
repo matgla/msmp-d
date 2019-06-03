@@ -8,12 +8,13 @@ import std.experimental.logger;
 import std.range;
 import std.signals;
 
-import source.execution_queue;
+import eul.execution.execution_queue;
+import eul.timer.timeout_timer : TimeoutTimer;
+import eul.logger.logger_factory;
+
 import source.i_data_writer;
-import source.logger_factory;
 import source.transmission_status: TransmissionStatus;
 import source.context : Context;
-import source.timeout_timer : TimeoutTimer;
 import source.control_byte;
 
 class DataLinkTransmitter
@@ -40,7 +41,6 @@ public:
 
     TransmissionStatus send(StreamType payload)
     {
-        logger_.tracef("Sending: %(%#x, %).", payload);
         if (payload.length >= context_.configuration().max_payload_size)
         {
             return TransmissionStatus.TooMuchPayload;
@@ -67,7 +67,6 @@ public:
 private:
     void do_on_succeeded()
     {
-        logger_.trace("Received succeeded signal from writer");
         process_succeeded_callback();
         run();
     }
@@ -199,7 +198,6 @@ private:
 
     void send_byte(ubyte data)
     {
-        logger_.tracef("Byte will be transmitted: %02#x", data);
         writer_.write(data);
         timer_.start(delegate() {
             if (retries_counter_ == 0)

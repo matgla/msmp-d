@@ -6,11 +6,16 @@
 	"description": "Client for simple messaging protocol MSMP",
 	"copyright": "Copyright @ 2019, Mateusz Stadnik",
 	"license": "GPLv3",
+	"subPackages": ["lib/eul"],
 	"configurations": [
 		{
 			"name": "executable",
 			"targetType": "executable",
-			"targetPath": "bin"
+			"targetPath": "bin",
+			"versions": ["StdLoggerDisableTrace"],
+			"dependencies": {
+				"msmp-d:eul-d": "*"
+			}
 		},
 		{
 			"name": "unittest",
